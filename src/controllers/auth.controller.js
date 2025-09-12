@@ -50,10 +50,10 @@ const register = catchAsync(async (req, res) => {
     });
   }
 
-  // Create user with plain password - will be hashed by pre-save hook
+  // Create user
   const user = new User({
     email,
-    passwordHash: password, // This will be hashed by the pre-save hook
+    passwordHash: password,
     role
   });
 
@@ -214,6 +214,7 @@ const refresh = catchAsync(async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
   
   if (!refreshToken) {
+    console.log('No refresh token found in cookies');
     return res.status(401).json({
       ok: false,
       error: {
@@ -224,8 +225,10 @@ const refresh = catchAsync(async (req, res) => {
   }
 
   try {
+    console.log('Attempting to verify refresh token');
     // Verify refresh token
     const decoded = verifyRefreshToken(refreshToken);
+    console.log('Refresh token verified successfully:', decoded);
     
     // Generate new access token
     const accessToken = generateAccessToken({ id: decoded.id, role: decoded.role });
@@ -237,6 +240,7 @@ const refresh = catchAsync(async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Error during refresh token verification:', error);
     return res.status(401).json({
       ok: false,
       error: {

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +43,7 @@ connectDB();
 
 // Security middleware
 app.use(helmet());
+app.use(cookieParser());
 
 // CORS configuration
 // Dynamically construct allowed origins from environment variables

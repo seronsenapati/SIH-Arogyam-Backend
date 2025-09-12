@@ -14,3 +14,6 @@ Thumbs.db
 src/tests/
 **/*.test.js
 **/__tests__/
+
+# Frontend folder
+Frontend/
