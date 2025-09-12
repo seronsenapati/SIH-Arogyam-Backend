@@ -249,9 +249,26 @@ const logout = catchAsync(async (req, res) => {
   });
 });
 
+const getStatus = catchAsync(async (req, res) => {
+  // If we reach this point, the user is authenticated
+  // The protect middleware would have already verified the token
+  res.json({
+    ok: true,
+    data: {
+      authenticated: true,
+      user: {
+        id: req.user._id,
+        email: req.user.email,
+        role: req.user.role
+      }
+    }
+  });
+});
+
 module.exports = {
   register,
   login,
   refresh,
-  logout
+  logout,
+  getStatus
 };
