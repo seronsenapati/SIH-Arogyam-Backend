@@ -211,7 +211,9 @@ const login = catchAsync(async (req, res) => {
 });
 
 const refresh = catchAsync(async (req, res) => {
+  console.log('Refresh token request received');
   const refreshToken = req.cookies.refreshToken;
+  console.log('Refresh token from cookies:', refreshToken ? 'Present' : 'Missing');
   
   if (!refreshToken) {
     console.log('No refresh token found in cookies');
@@ -232,6 +234,7 @@ const refresh = catchAsync(async (req, res) => {
     
     // Generate new access token
     const accessToken = generateAccessToken({ id: decoded.id, role: decoded.role });
+    console.log('New access token generated');
 
     res.json({
       ok: true,
@@ -264,6 +267,7 @@ const logout = catchAsync(async (req, res) => {
 });
 
 const getStatus = catchAsync(async (req, res) => {
+  console.log('Status check request received for user:', req.user ? req.user.id : 'No user');
   // If we reach this point, the user is authenticated
   // The protect middleware would have already verified the token
   res.json({
