@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const Profile = require('../models/Profile');
-const { generateAccessToken, generateRefreshToken } = require('../config/jwt');
+const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../config/jwt');
 const Joi = require('joi');
 const catchAsync = require('../middleware/catchAsync');
 const { validateRegistration, validateLogin } = require('../middleware/validation.middleware');
@@ -50,10 +50,10 @@ const register = catchAsync(async (req, res) => {
     });
   }
 
-  // Create user
+  // Create user with plain password - will be hashed by pre-save hook
   const user = new User({
     email,
-    passwordHash: password,
+    passwordHash: password, // This will be hashed by the pre-save hook
     role
   });
 
@@ -223,18 +223,28 @@ const refresh = catchAsync(async (req, res) => {
     });
   }
 
-  // Verify refresh token
-  const decoded = require('../config/jwt').verifyRefreshToken(refreshToken);
-  
-  // Generate new access token
-  const accessToken = generateAccessToken({ id: decoded.id, role: decoded.role });
+  try {
+    // Verify refresh token
+    const decoded = verifyRefreshToken(refreshToken);
+    
+    // Generate new access token
+    const accessToken = generateAccessToken({ id: decoded.id, role: decoded.role });
 
-  res.json({
-    ok: true,
-    data: {
-      accessToken
-    }
-  });
+    res.json({
+      ok: true,
+      data: {
+        accessToken
+      }
+    });
+  } catch (error) {
+    return res.status(401).json({
+      ok: false,
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Invalid refresh token'
+      }
+    });
+  }
 });
 
 const logout = catchAsync(async (req, res) => {
