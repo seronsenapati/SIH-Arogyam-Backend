@@ -8,14 +8,17 @@ services:
       - key: NODE_ENV
         value: production
       - key: JWT_SECRET
-        value: K7Gj3H9xR2pL8qW4sA6zN1mV5bY0cX3k
+        sync: false
       - key: JWT_REFRESH_SECRET
-        value: P9mN4bQ7wE3rT6yU8iO0pA2sD5fG1hJ6
+        sync: false
       - key: ACCESS_TOKEN_EXPIRY
         value: 15m
       - key: REFRESH_TOKEN_EXPIRY
         value: 7d
       - key: MONGO_URI
-        value: mongodb+srv://ayursutra:strongpass123@cluster0.ibx71mu.mongodb.net/ayursutra?retryWrites=true&w=majority&appName=Cluster0
+        sync: false
       - key: PORT
         value: 4000
+    # Expose the port that the application listens on
+    expose:
+      - 4000

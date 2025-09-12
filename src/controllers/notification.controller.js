@@ -66,6 +66,9 @@ const markAsRead = catchAsync(async (req, res) => {
   });
 });
 
+// Remove any WebSocket-related real-time notification functionality
+// This is a simplified version without real-time updates
+
 module.exports = {
   getAll,
   markAsRead

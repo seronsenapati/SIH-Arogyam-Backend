@@ -4,6 +4,10 @@ const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = requir
 const Joi = require('joi');
 const catchAsync = require('../middleware/catchAsync');
 const { validateRegistration, validateLogin } = require('../middleware/validation.middleware');
+const jwt = require('jsonwebtoken');
+
+// Load environment variables
+require('dotenv').config();
 
 // Validation schemas
 const registerSchema = Joi.object({
@@ -21,6 +25,48 @@ const registerSchema = Joi.object({
 const loginSchema = Joi.object({
   username: Joi.string().required(),
   password: Joi.string().required()
+});
+
+// Debug endpoint for JWT verification
+const debugVerifyToken = catchAsync(async (req, res) => {
+  const { token } = req.body;
+  
+  if (!token) {
+    return res.status(400).json({
+      ok: false,
+      error: {
+        code: 'BAD_REQUEST',
+        message: 'Token is required'
+      }
+    });
+  }
+  
+  try {
+    // Log environment variables for debugging
+    console.log('Debug verify - NODE_ENV:', process.env.NODE_ENV);
+    console.log('Debug verify - JWT_SECRET present:', !!process.env.JWT_SECRET);
+    
+    // Try to verify the token
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    res.json({
+      ok: true,
+      data: {
+        decoded
+      }
+    });
+  } catch (error) {
+    console.error('Debug verify error:', error);
+    res.status(401).json({
+      ok: false,
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Token verification failed',
+        details: error.message
+      }
+    });
+  }
 });
 
 const register = catchAsync(async (req, res) => {
@@ -80,8 +126,8 @@ const register = catchAsync(async (req, res) => {
   await userProfile.save();
 
   // Generate tokens
-  const accessToken = generateAccessToken({ id: user._id, role: user.role });
-  const refreshToken = generateRefreshToken({ id: user._id, role: user.role });
+  const accessToken = generateAccessToken({ id: user._id, role: user.role }, process.env.JWT_SECRET);
+  const refreshToken = generateRefreshToken({ id: user._id, role: user.role }, process.env.JWT_REFRESH_SECRET);
 
   // Set refresh token as HTTP-only cookie
   res.cookie('refreshToken', refreshToken, {
@@ -133,8 +179,8 @@ const login = catchAsync(async (req, res) => {
     };
     
     // Generate tokens
-    const accessToken = generateAccessToken({ id: consultantUser._id, role: consultantUser.role });
-    const refreshToken = generateRefreshToken({ id: consultantUser._id, role: consultantUser.role });
+    const accessToken = generateAccessToken({ id: consultantUser._id, role: consultantUser.role }, process.env.JWT_SECRET);
+    const refreshToken = generateRefreshToken({ id: consultantUser._id, role: consultantUser.role }, process.env.JWT_REFRESH_SECRET);
     
     // Set refresh token as HTTP-only cookie
     res.cookie('refreshToken', refreshToken, {
@@ -182,8 +228,8 @@ const login = catchAsync(async (req, res) => {
   }
 
   // Generate tokens
-  const accessToken = generateAccessToken({ id: user._id, role: user.role });
-  const refreshToken = generateRefreshToken({ id: user._id, role: user.role });
+  const accessToken = generateAccessToken({ id: user._id, role: user.role }, process.env.JWT_SECRET);
+  const refreshToken = generateRefreshToken({ id: user._id, role: user.role }, process.env.JWT_REFRESH_SECRET);
 
   // Set refresh token as HTTP-only cookie
   res.cookie('refreshToken', refreshToken, {
@@ -229,11 +275,11 @@ const refresh = catchAsync(async (req, res) => {
   try {
     console.log('Attempting to verify refresh token');
     // Verify refresh token
-    const decoded = verifyRefreshToken(refreshToken);
+    const decoded = verifyRefreshToken(refreshToken, process.env.JWT_REFRESH_SECRET);
     console.log('Refresh token verified successfully:', decoded);
     
     // Generate new access token
-    const accessToken = generateAccessToken({ id: decoded.id, role: decoded.role });
+    const accessToken = generateAccessToken({ id: decoded.id, role: decoded.role }, process.env.JWT_SECRET);
     console.log('New access token generated');
 
     res.json({
@@ -267,20 +313,108 @@ const logout = catchAsync(async (req, res) => {
 });
 
 const getStatus = catchAsync(async (req, res) => {
-  console.log('Status check request received for user:', req.user ? req.user.id : 'No user');
-  // If we reach this point, the user is authenticated
-  // The protect middleware would have already verified the token
-  res.json({
-    ok: true,
-    data: {
-      authenticated: true,
-      user: {
-        id: req.user._id,
-        email: req.user.email,
-        role: req.user.role
+  console.log('=== GET STATUS DEBUG ===');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('JWT_SECRET present:', !!process.env.JWT_SECRET);
+  console.log('JWT_SECRET value (first 10 chars):', process.env.JWT_SECRET ? process.env.JWT_SECRET.substring(0, 10) : 'NONE');
+  console.log('Full JWT_SECRET length:', process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0);
+  console.log('========================');
+  
+  // Get token from Authorization header
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({
+      ok: false,
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'No token provided'
       }
+    });
+  }
+  
+  const token = authHeader.split(' ')[1];
+  console.log('Token received in getStatus, length:', token.length);
+  
+  try {
+    // Verify token directly in this function as a workaround
+    console.log('Attempting to verify token directly in getStatus');
+    console.log('JWT_SECRET present:', !!process.env.JWT_SECRET);
+    
+    if (!process.env.JWT_SECRET) {
+      console.error('CRITICAL ERROR: JWT_SECRET is not available in getStatus');
+      return res.status(500).json({
+        ok: false,
+        error: {
+          code: 'SERVER_ERROR',
+          message: 'Server configuration error - JWT_SECRET not available'
+        }
+      });
     }
-  });
+    
+    // Log the actual JWT_SECRET value for debugging (remove in production)
+    console.log('JWT_SECRET value for verification:', process.env.JWT_SECRET);
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Token verified in getStatus, decoded:', decoded);
+    
+    // Handle special consultant user
+    if (decoded.id === 'consultant-env') {
+      console.log('Special consultant user detected in getStatus');
+      return res.json({
+        ok: true,
+        data: {
+          authenticated: true,
+          user: {
+            id: 'consultant-env',
+            email: 'consultant@arogyam.com',
+            role: 'consultant'
+          }
+        }
+      });
+    }
+    
+    // Get user from token (for regular users)
+    const user = await User.findById(decoded.id).select('-passwordHash');
+    console.log('User found in getStatus:', user ? user.id : 'No user');
+    
+    if (!user) {
+      console.log('User not found in database in getStatus');
+      return res.status(401).json({
+        ok: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Not authorized, user not found'
+        }
+      });
+    }
+    
+    res.json({
+      ok: true,
+      data: {
+        authenticated: true,
+        user: {
+          id: user._id,
+          email: user.email,
+          role: user.role
+        }
+      }
+    });
+  } catch (error) {
+    console.error('=== TOKEN VERIFICATION ERROR ===');
+    console.error('Token verification error in getStatus:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Token that failed verification:', token);
+    console.error('===============================');
+    return res.status(401).json({
+      ok: false,
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Not authorized, token failed',
+        details: error.message
+      }
+    });
+  }
 });
 
 module.exports = {
@@ -288,5 +422,6 @@ module.exports = {
   login,
   refresh,
   logout,
-  getStatus
+  getStatus,
+  debugVerifyToken
 };
