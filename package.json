@@ -11,6 +11,9 @@
     "format": "prettier --write .",
     "seed": "node src/scripts/seed.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/seronsenapati/SIH-Arogyam-Frontend.git"

@@ -247,6 +247,68 @@ npm run seed
 
 Note: Consultants are not seeded as they are managed via environment variables.
 
+## Deployment to Render
+
+### Prerequisites for Render Deployment
+
+1. A Render account (https://render.com)
+2. A MongoDB database (MongoDB Atlas recommended)
+3. API keys for Daily.co, SendGrid, and Cloudinary
+
+### Render Deployment Steps
+
+1. Fork this repository to your GitHub account
+2. Log in to your Render account
+3. Click "New" → "Web Service"
+4. Connect your GitHub account and select your forked repository
+5. Configure the following settings:
+   - **Name**: Arogyam-Backend (or any name you prefer)
+   - **Branch**: main
+   - **Root Directory**: Leave empty
+   - **Environment**: Node
+   - **Build Command**: `npm install`
+   - **Start Command**: `node src/server.js`
+   - **Instance Type**: Free (for testing) or choose a paid tier for production
+
+6. Add the required Environment Variables:
+   ```
+   MONGO_URI=your_mongodb_connection_string
+   JWT_SECRET=your_random_jwt_secret_key
+   JWT_REFRESH_SECRET=your_random_refresh_secret_key
+   CONSULTANT_USERNAME=your_consultant_username
+   CONSULTANT_PASSWORD=your_consultant_password
+   DAILY_API_KEY=your_daily_api_key
+   SENDGRID_API_KEY=your_sendgrid_api_key
+   EMAIL_FROM=no-reply@yourdomain.com
+   CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+   CLOUDINARY_API_KEY=your_cloudinary_api_key
+   CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+   ```
+
+7. Click "Create Web Service"
+
+8. Wait for the build and deployment to complete
+
+### Environment Variables Required
+
+- `MONGO_URI`: Your MongoDB connection string
+- `JWT_SECRET`: Random string for signing JWT tokens
+- `JWT_REFRESH_SECRET`: Another random string for refresh tokens
+- `CONSULTANT_USERNAME`: Username for consultant login
+- `CONSULTANT_PASSWORD`: Password for consultant login
+- `DAILY_API_KEY`: API key for Daily.co video sessions
+- `SENDGRID_API_KEY`: API key for SendGrid email service
+- `EMAIL_FROM`: Email address for sending notifications
+- `CLOUDINARY_CLOUD_NAME`: Your Cloudinary cloud name
+- `CLOUDINARY_API_KEY`: Your Cloudinary API key
+- `CLOUDINARY_API_SECRET`: Your Cloudinary API secret
+
+### Notes
+
+- Render will automatically set the `PORT` environment variable
+- Make sure to use production-ready values for all secrets
+- The application will run database migrations automatically on startup
+
 ## License
 
 ✅ **MIT License** - Open source and free to use
