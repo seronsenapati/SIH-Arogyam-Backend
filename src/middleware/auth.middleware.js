@@ -1,77 +1,67 @@
-const { verifyAccessToken } = require('../config/jwt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const authenticate = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+// Protect routes - check if user is authenticated
+const protect = async (req, res, next) => {
+  let token;
 
-    if (!token) {
-      return res.status(401).json({ 
-        ok: false, 
-        error: { 
-          code: 'UNAUTHORIZED', 
-          message: 'Access token required' 
-        } 
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      // Get token from header
+      token = req.headers.authorization.split(' ')[1];
+
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Get user from token
+      req.user = await User.findById(decoded.id).select('-passwordHash');
+
+      next();
+    } catch (error) {
+      console.error(error);
+      return res.status(401).json({
+        ok: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Not authorized, token failed'
+        }
       });
     }
+  }
 
-    const decoded = verifyAccessToken(token);
-    
-    // Handle consultant user from environment variables
-    if (decoded.id === 'consultant-env') {
-      req.user = {
-        _id: 'consultant-env',
-        email: 'consultant@arogyam.com',
-        role: 'consultant'
-      };
-      return next();
-    }
-    
-    const user = await User.findById(decoded.id).select('-passwordHash');
-    
-    if (!user) {
-      return res.status(401).json({ 
-        ok: false, 
-        error: { 
-          code: 'UNAUTHORIZED', 
-          message: 'Invalid token' 
-        } 
-      });
-    }
-
-    req.user = user;
-    next();
-  } catch (error) {
-    return res.status(401).json({ 
-      ok: false, 
-      error: { 
-        code: 'UNAUTHORIZED', 
-        message: 'Invalid token' 
-      } 
+  if (!token) {
+    return res.status(401).json({
+      ok: false,
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Not authorized, no token'
+      }
     });
   }
 };
 
-const authorizeRoles = (...roles) => {
+// Restrict to specific roles
+const restrictTo = (...roles) => {
   return (req, res, next) => {
+    // Check if user exists
     if (!req.user) {
-      return res.status(401).json({ 
-        ok: false, 
-        error: { 
-          code: 'UNAUTHORIZED', 
-          message: 'Authentication required' 
-        } 
+      return res.status(401).json({
+        ok: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Not authorized'
+        }
       });
     }
 
+    // Check if user's role is in the allowed roles
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        ok: false, 
-        error: { 
-          code: 'FORBIDDEN', 
-          message: 'Insufficient permissions' 
-        } 
+      return res.status(403).json({
+        ok: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Access denied - insufficient permissions'
+        }
       });
     }
 
@@ -80,6 +70,6 @@ const authorizeRoles = (...roles) => {
 };
 
 module.exports = {
-  authenticate,
-  authorizeRoles,
+  protect,
+  restrictTo
 };

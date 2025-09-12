@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate, authorizeRoles } = require('../middleware/auth.middleware');
+const { protect, restrictTo } = require('../middleware/auth.middleware');
 const {
   getConsultants,
   getConsultant,
@@ -8,9 +8,9 @@ const {
   createAvailability
 } = require('../controllers/consultant.controller');
 
-router.get('/', getConsultants);
-router.get('/:id', getConsultant);
-router.get('/:id/availability', getAvailability);
-router.post('/:id/availability', authenticate, authorizeRoles('consultant', 'admin'), createAvailability);
+router.get('/', protect, getConsultants);
+router.get('/:id', protect, getConsultant);
+router.get('/:id/availability', protect, getAvailability);
+router.post('/:id/availability', protect, restrictTo('consultant', 'admin'), createAvailability);
 
 module.exports = router;

@@ -157,6 +157,68 @@ CONSULTANT_PASSWORD=securepassword123
 - `GET /api/notifications?unread=true` - List notifications
 - `PUT /api/notifications/:id/read` - Mark notification as read
 
+## API Routes Summary for Frontend Team
+
+### Authentication Routes
+| Method | Endpoint | Description | Role Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/auth/register` | Register new user | None (patient/doctor only) |
+| POST | `/api/auth/login` | User login | None |
+| POST | `/api/auth/refresh` | Refresh access token | None |
+| POST | `/api/auth/logout` | User logout | Authenticated |
+
+### User Routes
+| Method | Endpoint | Description | Role Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/users/me` | Get current user profile | Authenticated |
+| PUT | `/api/users/me` | Update current user profile | Authenticated |
+
+### Consultant Routes
+| Method | Endpoint | Description | Role Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/consultants` | List all consultants | Authenticated |
+| GET | `/api/consultants/:id` | Get consultant details | Authenticated |
+| GET | `/api/consultants/:id/availability` | Get consultant availability | Authenticated |
+| POST | `/api/consultants/:id/availability` | Set availability template | Consultant |
+
+### Appointment Routes
+| Method | Endpoint | Description | Role Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/appointments` | Create new appointment | Patient |
+| GET | `/api/appointments` | List appointments | Authenticated |
+| GET | `/api/appointments/:id` | Get appointment details | Authenticated |
+| PUT | `/api/appointments/:id/cancel` | Cancel appointment | Patient/Consultant |
+| PUT | `/api/appointments/:id/confirm` | Confirm appointment | Consultant |
+
+### Session Routes
+| Method | Endpoint | Description | Role Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/sessions/:appointmentId/token` | Get video session token | Patient/Consultant |
+| POST | `/api/sessions/:appointmentId/complete` | Complete session | Consultant |
+
+### Prescription Routes
+| Method | Endpoint | Description | Role Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/patients/:id/prescriptions` | Create prescription | Doctor |
+| GET | `/api/patients/:id/prescriptions` | List prescriptions | Patient/Doctor/Admin |
+
+### Calendar Routes
+| Method | Endpoint | Description | Role Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/calendar/:userId/events` | Get monthly events | User (own data) |
+
+### Blog Routes
+| Method | Endpoint | Description | Role Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/blog` | List blog posts | None/Public |
+| POST | `/api/blog` | Create blog post | Doctor/Consultant/Admin |
+
+### Notification Routes
+| Method | Endpoint | Description | Role Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/notifications` | List notifications | Authenticated |
+| PUT | `/api/notifications/:id/read` | Mark as read | Notification owner |
+
 ## Testing
 
 Run the test suite:
