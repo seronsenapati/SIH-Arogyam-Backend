@@ -96,10 +96,10 @@ const register = catchAsync(async (req, res) => {
     });
   }
 
-  // Create user
+  // Create user with hashed password
   const user = new User({
     email,
-    passwordHash: password,
+    passwordHash: password, // This will be hashed by the pre-save middleware
     role
   });
 
@@ -170,6 +170,7 @@ const login = catchAsync(async (req, res) => {
   const { username, password } = req.body;
 
   // Handle consultant login via environment variables
+  // This check should happen before checking the database
   if (username === process.env.CONSULTANT_USERNAME && password === process.env.CONSULTANT_PASSWORD) {
     // Create a temporary consultant user object
     const consultantUser = {

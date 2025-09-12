@@ -144,6 +144,49 @@ app.get('/test-jwt-secret', (req, res) => {
   });
 });
 
+// JWT Test endpoint
+app.get('/test-jwt', (req, res) => {
+  try {
+    const jwt = require('jsonwebtoken');
+    
+    // Test JWT_SECRET
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({
+        ok: false,
+        error: {
+          code: 'CONFIG_ERROR',
+          message: 'JWT_SECRET not configured'
+        }
+      });
+    }
+    
+    // Create a test token
+    const testPayload = { id: 'test-user', role: 'test' };
+    const token = jwt.sign(testPayload, process.env.JWT_SECRET, { expiresIn: '1m' });
+    
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    res.json({
+      ok: true,
+      data: {
+        message: 'JWT configuration is working',
+        token: token,
+        decoded: decoded
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: {
+        code: 'JWT_ERROR',
+        message: 'JWT configuration error',
+        details: error.message
+      }
+    });
+  }
+});
+
 // Add logging middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);

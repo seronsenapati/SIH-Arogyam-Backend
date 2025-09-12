@@ -354,8 +354,8 @@ Note: Consultants are not seeded as they are managed via environment variables.
 ### Environment Variables Required
 
 - `MONGO_URI`: Your MongoDB connection string
-- `JWT_SECRET`: Random string for signing JWT tokens
-- `JWT_REFRESH_SECRET`: Another random string for refresh tokens
+- `JWT_SECRET`: Random string for signing JWT tokens (at least 32 characters)
+- `JWT_REFRESH_SECRET`: Another random string for refresh tokens (at least 32 characters)
 - `CONSULTANT_USERNAME`: Username for consultant login
 - `CONSULTANT_PASSWORD`: Password for consultant login
 - `DAILY_API_KEY`: API key for Daily.co video sessions
@@ -364,6 +364,20 @@ Note: Consultants are not seeded as they are managed via environment variables.
 - `CLOUDINARY_CLOUD_NAME`: Your Cloudinary cloud name
 - `CLOUDINARY_API_KEY`: Your Cloudinary API key
 - `CLOUDINARY_API_SECRET`: Your Cloudinary API secret
+
+### Setting Environment Variables on Render
+
+After creating your web service on Render, you must manually set all environment variables in the Render dashboard:
+
+1. Go to your Render dashboard
+2. Click on your Arogyam-Backend service
+3. Click on "Environment" in the sidebar
+4. Add each required environment variable with secure values:
+   - For `JWT_SECRET` and `JWT_REFRESH_SECRET`, generate strong random strings
+   - For `CONSULTANT_USERNAME` and `CONSULTANT_PASSWORD`, set your preferred credentials
+   - For API keys, use your actual service credentials
+
+**Important**: Never commit sensitive information like API keys or passwords to your repository. The render.yaml file is configured to use environment variables for all sensitive data.
 
 ### Notes
 
