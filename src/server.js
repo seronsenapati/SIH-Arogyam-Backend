@@ -44,8 +44,38 @@ connectDB();
 app.use(helmet());
 
 // CORS configuration
+// Dynamically construct allowed origins from environment variables
+const allowedOrigins = [];
+
+// Add FRONTEND_URL if it exists
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+// Construct frontend URL from FRONTEND_PORT if provided
+if (process.env.FRONTEND_PORT) {
+  allowedOrigins.push(`http://localhost:${process.env.FRONTEND_PORT}`);
+}
+
+// Add common localhost ports for development
+allowedOrigins.push('http://localhost:3000');
+allowedOrigins.push('http://localhost:3001');
+
+// Add deployed frontend URL
+allowedOrigins.push('https://sih-arogyam-frontend.onrender.com');
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+      return callback(new Error(msg), false);
+    }
+    
+    return callback(null, true);
+  },
   credentials: true
 }));
 
