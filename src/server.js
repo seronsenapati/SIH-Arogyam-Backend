@@ -65,7 +65,8 @@ app.use(cookieParser());
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
-  'https://sih-arogyam-frontend.onrender.com'
+  'https://sih-arogyam-frontend.onrender.com',
+  'https://sih-arogyam-frontend.vercel.app'
 ];
 
 // Add FRONTEND_URL if it exists
