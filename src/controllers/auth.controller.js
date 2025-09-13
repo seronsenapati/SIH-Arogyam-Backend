@@ -14,7 +14,12 @@ const registerSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
   role: Joi.string().valid('patient', 'doctor').required(),
-  doctorLicense: Joi.when('role', {
+  stateCouncilNumber: Joi.when('role', {
+    is: 'doctor',
+    then: Joi.string().required(),
+    otherwise: Joi.string().optional()
+  }),
+  nationalRegistrationNumber: Joi.when('role', {
     is: 'doctor',
     then: Joi.string().required(),
     otherwise: Joi.string().optional()
@@ -82,7 +87,7 @@ const register = catchAsync(async (req, res) => {
     });
   }
 
-  const { email, password, role, doctorLicense, profile } = req.body;
+  const { email, password, role, stateCouncilNumber, nationalRegistrationNumber, profile } = req.body;
 
   // Check if user already exists
   const existingUser = await User.findOne({ email });
@@ -110,9 +115,10 @@ const register = catchAsync(async (req, res) => {
     userId: user._id
   };
   
-  // If role is doctor, add license to profile
+  // If role is doctor, add the new fields to profile
   if (role === 'doctor') {
-    profileData.doctorLicense = doctorLicense;
+    profileData.stateCouncilNumber = stateCouncilNumber;
+    profileData.nationalRegistrationNumber = nationalRegistrationNumber;
   }
   
   if (profile) {

@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { register, login, refresh, logout, getStatus, debugVerifyToken } = require('../controllers/auth.controller');
-const { validateRegistration, validateLogin } = require('../middleware/validation.middleware');
+const { validateLogin } = require('../middleware/validation.middleware');
 
 console.log('Auth routes file loaded');
 
-router.post('/register', validateRegistration, register);
+router.post('/register', register);
 router.post('/login', validateLogin, login);
 router.post('/refresh', refresh);
 router.post('/logout', logout);

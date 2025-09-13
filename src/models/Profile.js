@@ -34,6 +34,14 @@ const profileSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  stateCouncilNumber: {
+    type: String,
+    trim: true
+  },
+  nationalRegistrationNumber: {
+    type: String,
+    trim: true
+  },
   meta: {
     type: mongoose.Schema.Types.Mixed
   }

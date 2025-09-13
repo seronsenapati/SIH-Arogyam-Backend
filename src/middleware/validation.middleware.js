@@ -5,7 +5,8 @@ const validateRegistration = [
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
   body('role').isIn(['patient', 'doctor']).withMessage('Role must be either patient or doctor'),
-  body('doctorLicense').if((value, { req }) => req.body.role === 'doctor').notEmpty().withMessage('Doctor license is required for doctors'),
+  body('stateCouncilNumber').if((value, { req }) => req.body.role === 'doctor').notEmpty().withMessage('State Council Number is required for doctors'),
+  body('nationalRegistrationNumber').if((value, { req }) => req.body.role === 'doctor').notEmpty().withMessage('National Registration Number is required for doctors'),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
